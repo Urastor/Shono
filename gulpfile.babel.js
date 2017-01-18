@@ -1,19 +1,14 @@
 import gulp from 'gulp';
-import uglify from 'gulp-uglify';
-import rename from 'gulp-rename';
 import del from 'del';
 import browserSync from 'browser-sync';
 import webpack from 'webpack-stream';
 import webpackConfig from './webpack.config';
+import config from './config';
 
-const OUTPUT_FILE = 'shono.js';
-const JS_FILES = './src/*.js';
-const ENTRY_FILE = './src/shono.js';
-const DEST_PATH = './dest';
 
 gulp.task('watch:js', () => {
     console.log('Watching for javascript files to change..');
-    gulp.watch(JS_FILES, gulp.series('javascript', 'bs:reload'));
+    gulp.watch(config.paths.js, gulp.series('webpack:js', 'bs:reload'));
 });
 
 gulp.task('watch:index', () => {
@@ -25,23 +20,20 @@ gulp.task('watch', gulp.parallel('watch:js', 'watch:index'));
 
 gulp.task('clean:dest', d => {
     console.log('Cleaning destination folder..');
-    del([DEST_PATH + '/**/*']);
+    del([config.output.dest + '**/*']);
     d();
 });
 
-gulp.task('javascript', gulp.series('clean:dest', () => {
-    console.log('Applying webpack and minifying destination file..');
-    return gulp.src(ENTRY_FILE)
+gulp.task('webpack:js', () => {
+    console.log('Applying webpack for js files..');
+    return gulp.src(config.entryFile)
         .pipe(webpack(webpackConfig))
-        .pipe(rename(OUTPUT_FILE))
-        .pipe(gulp.dest(DEST_PATH))
-        .pipe(uglify())
-        .pipe(rename('min.' + OUTPUT_FILE))
-        .pipe(gulp.dest(DEST_PATH));
-}));
+        .pipe(gulp.dest(config.output.dest));
+});
 
 gulp.task('bs:start', d => {
     browserSync.init({
+        open: false,
         server: {
             baseDir: './'
         }
@@ -54,6 +46,8 @@ gulp.task('bs:reload', d => {
     d();
 });
 
-gulp.task('run:normal', gulp.parallel('javascript', 'watch'));
+gulp.task('run:build', gulp.parallel('clean:dest', 'webpack:js'));
 
-gulp.task('run:server', gulp.series('bs:start', 'run:normal'));
+gulp.task('run:watch', gulp.parallel('run:build', 'watch'));
+
+gulp.task('run:server', gulp.series('bs:start', 'run:watch'));
