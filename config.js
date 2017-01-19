@@ -2,7 +2,7 @@ let dir = __dirname;
 
 const config = {
     libraryName: 'Shono',
-    entryFile: dir + '/src/Shono.js',
+    entryFile: dir + '/src/main.js',
     output: {
         filename: 'shono.js',
         dest: dir + '/dest/'
