@@ -8,7 +8,7 @@ const config = {
         dest: dir + '/dest/'
     },
     paths: {
-        'js': dir + '/src/*.js'
+        'js': dir + '/src/**/*.js'
     }
 };
 
